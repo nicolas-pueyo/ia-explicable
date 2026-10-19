@@ -52,6 +52,7 @@
   .small { font-size: 10.5px !important; color: var(--ink2) !important; }
   .cases { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
   .cases p { font-size: 11.5px; line-height: 1.35; }
+  .pill.w { width: auto; border-radius: 9px; padding: 0 5px; font-size: 9.5px; }
 </style>
 </head>
 <body>
@@ -69,34 +70,34 @@
     <div class="kpi"><div class="v">25.000</div><div class="l">clientes de entrenamiento · 15 variables (historial de pago 6 meses, facturas, demografía, plan de asistencia)</div></div>
     <div class="kpi"><div class="v">21,2 %</div><div class="l">tienen dificultad de pago → baseline de accuracy 0,788 y foco en balanced accuracy / recall</div></div>
     <div class="kpi"><div class="v" style="color:var(--ebm)">0,776</div><div class="l">ROC AUC del EBM, el mejor modelo en todas las métricas → usado para <b>test.csv</b></div></div>
-    <div class="kpi"><div class="v">0,30 → 0,58</div><div class="l">recall del EBM al bajar el umbral de 0,5 a 0,25 (balanced acc. 0,63 → 0,70)</div></div>
+    <div class="kpi"><div class="v">0,30 → 0,58</div><div class="l">recall del EBM al bajar el umbral de 0,5 a 0,25 (balanced acc. 0,629 → 0,700; accuracy 0,819 → 0,768)</div></div>
   </div>
   <div class="grid" style="grid-template-columns: 1.32fr 1fr 1fr;">
     <div style="display:flex; flex-direction:column; gap:14px; min-height:0">
       <div class="card">
         <h3>Resultados · 5-fold CV (media ± desv.)</h3>
         <table>
-          <tr><th>Clasificador</th><th>Ajustes clave</th><th class="n">Acc.</th><th class="n">Bal. acc.</th><th class="n">Recall</th><th class="n">ROC AUC</th></tr>
-          <tr><td><span class="sw" style="background:var(--tree)"></span>DecisionTree</td><td>entropy, depth 4, min_leaf 100</td><td class="n">0,813</td><td class="n">0,603</td><td class="n">0,237</td><td class="n">0,747 ±0,005</td></tr>
-          <tr><td><span class="sw" style="background:var(--lr)"></span>LogisticRegression</td><td>L2, C = 0,1, estandarizado</td><td class="n">0,811</td><td class="n">0,604</td><td class="n">0,245</td><td class="n">0,752 ±0,006</td></tr>
-          <tr class="best"><td><span class="sw" style="background:var(--ebm)"></span>EBM</td><td>interactions = 0</td><td class="n">0,819</td><td class="n">0,629</td><td class="n">0,299</td><td class="n">0,776 ±0,005</td></tr>
+          <tr><th>Clasificador</th><th>Ajustes clave</th><th class="n">Acc.</th><th class="n">Bal. acc.</th><th class="n">Recall</th><th class="n">F1</th><th class="n">ROC AUC</th></tr>
+          <tr><td><span class="sw" style="background:var(--tree)"></span>DecisionTree</td><td>entropy, depth 4, min_leaf 100</td><td class="n">0,813</td><td class="n">0,603</td><td class="n">0,237</td><td class="n">0,350</td><td class="n">0,747 ±0,005</td></tr>
+          <tr><td><span class="sw" style="background:var(--lr)"></span>LogisticRegression</td><td>L2, C = 0,1</td><td class="n">0,811</td><td class="n">0,604</td><td class="n">0,245</td><td class="n">0,354</td><td class="n">0,752 ±0,006</td></tr>
+          <tr class="best"><td><span class="sw" style="background:var(--ebm)"></span>EBM</td><td>interactions = 0</td><td class="n">0,819</td><td class="n">0,629</td><td class="n">0,299</td><td class="n">0,412</td><td class="n">0,776 ±0,005</td></tr>
         </table>
-        <p class="small" style="margin-top:6px">Umbral 0,5 · hiperparámetros por GridSearchCV (ROC AUC) · one-hot en categóricas, escalado solo en la RL</p>
+        <p class="small" style="margin-top:4px">Umbral 0,5 · hiperparámetros por GridSearchCV (ROC AUC) · one-hot en categóricas, escalado solo en la RL</p>
       </div>
       <div class="card key" style="flex:1">
         <h3>Lo que hemos aprendido</h3>
         <ul>
-          <li>Los tres modelos coinciden: <b>el comportamiento de pago reciente domina</b> (estado del último pago, meses sin pagar, ratio pago/factura). La demografía apenas pesa.</li>
-          <li>El EBM gana +0,03 de AUC <b>sin perder interpretabilidad</b>: capta efectos no lineales (edad, ratio pago/factura) que la RL fuerza a ser rectas.</li>
-          <li>Las explicaciones <b>discrepan</b> en los casos B y C (casi idénticos): el árbol ignora el plan de asistencia, la RL y el EBM no.</li>
+          <li>Los tres modelos coinciden: <b>el comportamiento de pago reciente domina</b> (estado del último pago, meses sin pagar, pago/factura); la demografía apenas pesa.</li>
+          <li>El EBM gana +0,03 de AUC <b>sin perder interpretabilidad</b>: capta formas en U (edad, pago/factura) que la RL reduce a rectas.</li>
+          <li>Limitación común: en cuentas casi inactivas ninguna variable distingue <b>“no paga lo que debe”</b> de <b>“no debe nada”</b> → el árbol confunde FP y TP; la RL solo los separa por el plan de asistencia.</li>
         </ul>
       </div>
     </div>
     <div class="card"><img src="figs/roc.svg" alt="Curvas ROC"></div>
-    <div class="card"><img src="figs/umbral.svg" alt="Balanced accuracy según umbral">
-      <p class="small" style="margin-top:4px">test.csv con umbral 0,5: casi el óptimo de accuracy (0,46), la métrica con que se evalúa; el umbral bajo es preferible si importa detectar impagos.</p></div>
+    <div class="card"><img src="figs/umbral.svg" alt="Métricas del EBM según el umbral">
+      <p class="small" style="margin-top:4px">Umbrales de 0,20 a 0,50 sobre predicciones out-of-fold. test.csv: EBM con umbral 0,5 (mayor accuracy, la métrica de evaluación); en un banco real, 0,25.</p></div>
   </div>
-  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Grupo: <b>[nombres del grupo]</b></span><span>1 / 4</span></footer>
+  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Javier Lineros Ballesta · Nicolás Pueyo Soria · Jorge Palma Rojas</span><span>1 / 4</span></footer>
 </section>
 
 <!-- ============ 2. ÁRBOL ============ -->
@@ -105,7 +106,7 @@
     <span class="tag" style="background:var(--tree)">Modelo lógico</span>
     <div>
       <h1>Árbol de decisión: 16 hojas que, en el fondo, son una sola regla</h1>
-      <div class="sub">CART, criterio entropía, profundidad 4, ≥ 100 clientes por hoja · color = % con dificultad en la hoja (gris = tasa base 21 %) · caminos de los casos A–D en negro</div>
+      <div class="sub">Entropía, profundidad 4, ≥ 100 clientes por hoja · color = % con dificultad en la hoja (gris = tasa base 21 %) · en negro, los 4 casos locales</div>
     </div>
   </header>
   <div class="card" style="padding:10px 12px 6px"><img src="figs/arbol.svg" alt="Árbol de decisión"></div>
@@ -113,8 +114,8 @@
     <div class="card">
       <h3>Interpretación global</h3>
       <p>Solo 3 de 16 hojas predicen la clase 1 con umbral 0,5. Juntas equivalen a <b>una regla</b>:</p>
-      <div class="rule">SI <code>estado último pago ≥ 1</code> Y <code>pago/factura ≤ 0,10</code><br>Y (<code>meses sin pagar ≥ 3</code> O <code>6 meses con retraso</code>) → <b>dificultad</b></div>
-      <p class="small">Cubre 1.868 clientes con 67 % de precisión. El resto de divisiones solo afinan probabilidades (útiles para el ROC y para bajar el umbral) → podría podarse a una lista de reglas.</p>
+      <div class="rule">SI <code>estado último pago ≥ 1</code> Y <code>pago/factura ≤ 0,11</code><br>Y (<code>meses sin pagar ≥ 3</code> O <code>6 meses con retraso</code>) → <b>dificultad</b></div>
+      <p class="small">Cubre 1.868 clientes con 67 % de precisión. Las 8 hojas de la rama izquierda predicen 0: con las mismas predicciones cabe una lista de reglas mucho más corta (GOSDT / imodels).</p>
     </div>
     <div class="card">
       <h3>¿Qué usa el árbol?</h3>
@@ -125,19 +126,19 @@
         <li>meses sin pagar <b>9 %</b> · meses con retraso <b>5 %</b></li>
         <li>edad <b>2 %</b> (corte en 24,5 años)</li>
       </ul>
-      <p class="small" style="margin-top:4px">Sexo, educación, estado civil y plan de asistencia: <b>0</b>.</p>
+      <p class="small" style="margin-top:4px">Sexo, educación y estado civil: <b>0</b>. También deja fuera la utilización y el plan de asistencia.</p>
     </div>
     <div class="card">
       <h3>Interpretación local · mismos casos en los 3 modelos</h3>
       <div class="cases">
-        <p><span class="pill">A</span><b>real 0</b>, al día, paga el 7 %: hoja 18 % → <span class="prot">0 ✓</span></p>
-        <p><span class="pill">D</span><b>real 1</b>, 2 meses de retraso, utilización 99 %, pero paga todos los meses: hoja 41 % → <span class="prot">0 ✗</span> (con umbral 0,25 sí acierta)</p>
-        <p><span class="pill">B</span><b>real 0</b> y <span class="pill">C</span><b>real 1</b>: 6 meses sin pagar, mismo historial. Caen en la <b>misma hoja (63 %)</b> → ambos <span class="risk">1</span>.</p>
-        <p>B y C solo difieren en plan de asistencia, edad, sexo y límite: <b>el árbol no puede separarlos</b>. B es un falso positivo inevitable.</p>
+        <p><span class="pill w">TN</span>al día, paga todos los meses, 54 años: hoja más poblada (7.560), P = 0,181 → <span class="prot">0 ✓</span></p>
+        <p><span class="pill w">FN</span>2 meses de retraso pero paga todos los meses: hoja P = 0,409 → <span class="prot">0 ✗</span>. Ignora utilización 99 %; con t = 0,25 acertaría.</p>
+        <p><span class="pill w">FP</span><span class="pill w">TP</span>mismo recorrido y <b>misma hoja (P = 0,630)</b>: 1 mes de retraso, ratio 0 y 6 meses sin abonos.</p>
+        <p>Pero su factura media es ≈ 0: cuentas inactivas, <b>“no debe nada”</b>, no “no paga”. El árbol no puede separarlos; el 37 % de esa hoja no tiene dificultades.</p>
       </div>
     </div>
   </div>
-  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Grupo: <b>[nombres del grupo]</b></span><span>2 / 4</span></footer>
+  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Javier Lineros Ballesta · Nicolás Pueyo Soria · Jorge Palma Rojas</span><span>2 / 4</span></footer>
 </section>
 
 <!-- ============ 3. REGRESIÓN LOGÍSTICA ============ -->
@@ -146,7 +147,7 @@
     <span class="tag" style="background:var(--lr)">Modelo lineal</span>
     <div>
       <h1>Regresión logística: efectos aditivos y comparables, leídos con cuidado</h1>
-      <div class="sub">L2 con C = 0,1 elegido por CV (ROC AUC 0,752) · variables numéricas estandarizadas → cada coeficiente es el cambio en log-odds por una desviación típica</div>
+      <div class="sub">L2 con C = 0,1 elegido por CV (ROC AUC 0,752) · numéricas estandarizadas → cada β es el cambio en log-odds por 1 desv. típica · β<sub>0</sub> = −1,64 (P base 16,3 %)</div>
     </div>
   </header>
   <div class="grid" style="grid-template-columns: 1fr 1.25fr 0.9fr;">
@@ -158,18 +159,19 @@
         <ul>
           <li>Riesgo: <span class="risk">meses sin pagar</span> (OR 1,66), <span class="risk">plan de asistencia</span> (OR 1,58), <span class="risk">estado último pago</span> y <span class="risk">utilización</span>.</li>
           <li>Protectores: <span class="prot">pago total</span> y <span class="prot">edad</span>.</li>
-          <li><b>retraso máximo</b> sale negativo: correlación 0,82 con meses con retraso. Es reparto de peso entre variables colineales, no un efecto real.</li>
+          <li><b>retraso máximo</b> sale negativo por colinealidad con meses con retraso (r = 0,825): con los meses fijos, un pico pasado ya regularizado indica capacidad de subsanar.</li>
         </ul>
       </div>
       <div class="card key" style="flex:1">
-        <h3>El caso más interesante: B frente a C</h3>
-        <p>Comparten los mismos +1,40 por 6 meses sin pagar. El <b>plan de asistencia (+0,46)</b> lleva a C por encima de 0,5:</p>
-        <p style="margin-top:6px"><b>B = 0,44 → 0 ✓ &nbsp; C = 0,52 → 1 ✓</b></p>
-        <p style="margin-top:6px">La RL acierta donde el árbol fallaba. Ojo: el plan es una <b>señal</b> de dificultad previa, no su causa.</p>
+        <h3>Resuelve la ambigüedad FP / TP</h3>
+        <p>Ambos suman +1,40 por 6 meses sin pagar. El <b>plan de asistencia (+0,46)</b> decide:</p>
+        <p style="margin-top:6px"><b>FP: z = −0,24 → 0,441 → 0 ✓<br>TP: z = +0,06 → 0,516 → 1 ✓</b></p>
+        <p style="margin-top:6px">FN: los pagos regulares compensan el retraso → 0,320; solo se detecta con t = 0,25.</p>
+        <p style="margin-top:6px">Ojo: el plan se asigna a quien ya tiene estrés financiero → <b>asociación, no causa</b>.</p>
       </div>
     </div>
   </div>
-  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Grupo: <b>[nombres del grupo]</b></span><span>3 / 4</span></footer>
+  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Javier Lineros Ballesta · Nicolás Pueyo Soria · Jorge Palma Rojas</span><span>3 / 4</span></footer>
 </section>
 
 <!-- ============ 4. EBM ============ -->
@@ -177,29 +179,39 @@
   <header>
     <span class="tag" style="background:var(--ebm)">Modelo aditivo</span>
     <div>
-      <h1>EBM: el mejor modelo, con formas no lineales que la RL no puede ver</h1>
-      <div class="sub">ExplainableBoostingClassifier, interactions = 0 · ROC AUC 0,776 · una función de forma f<sub>j</sub>(x<sub>j</sub>) por variable · <span class="risk">rojo = sube el riesgo</span>, <span class="prot">azul = lo baja</span></div>
+      <h1>EBM: el mejor modelo, con relaciones no monótonas que la RL no puede ver</h1>
+      <div class="sub">ExplainableBoostingClassifier, interactions = 0 · ROC AUC 0,776 · una función de forma f<sub>j</sub>(x<sub>j</sub>) por variable · <span class="risk">&gt; 0 sube el riesgo</span>, <span class="prot">&lt; 0 lo baja</span></div>
     </div>
   </header>
   <div class="grid" style="grid-template-columns: 1.12fr 1.05fr 0.83fr;">
     <div class="card"><h3>Interpretación global · funciones de forma</h3><img src="figs/ebm_formas.svg" alt="Funciones de forma del EBM">
       <ul style="margin-top:6px">
-        <li><b>Pago/factura</b>: riesgo máximo si no se paga; cae en 0,10 (<b>el mismo corte que el árbol</b>) y vuelve a ser de riesgo por encima de 1,7 (pagar mucho más que la factura).</li>
-        <li><b>Edad</b>: forma en U, salto en 24,5 años (otra vez el corte del árbol). La RL solo ve una recta.</li>
+        <li><b>Estado último pago</b>: ≤ 0 resta riesgo; el 1.<sup>er</sup> mes de retraso salta a ≈ +0,30 y sube por escalones hasta ≈ +1,1 (4–5 meses).</li>
+        <li><b>Meses sin pagar</b>: no monótona; mínimo con 1 mes (≈ −0,33), ≥ 3 meses crece hasta ≈ +1,0.</li>
+        <li><b>Pago/factura</b>: forma de U; no pagar ≈ +0,62, mínimo ≈ −0,45 entre 0,4 y 0,6, sube a ≈ +0,4 por encima de 1,75 → por eso la RL le da coef. ≈ 0.</li>
+        <li><b>Edad</b>: U; &lt; 25 años ≈ +0,6, mínimo 30–50, vuelve a subir desde 57. La RL solo recoge el primer tramo.</li>
       </ul>
+      <p class="small" style="margin-top:2px">Banda = incertidumbre entre bolsas de entrenamiento.</p>
     </div>
     <div class="card"><h3>Interpretación local · contribuciones del EBM</h3><img src="figs/ebm_local.svg" alt="Contribuciones locales del EBM">
-      <p class="small" style="margin-top:4px">C supera a B por el plan de asistencia (+0,36 frente a −0,10). D obtiene la probabilidad más alta de los tres modelos gracias a estado de pago 2 (+0,74) y utilización 99 % (+0,29).</p></div>
+      <p class="small" style="margin-top:4px">TP (0,640) supera a FP (0,505) en 13,5 puntos por el plan de asistencia (+0,36 frente a −0,10), aunque FP sigue siendo alarma. FN sube a 0,466, la más alta de los tres modelos, por estado de pago 2 (+0,74) y utilización 99 % (+0,29).</p></div>
     <div style="display:flex; flex-direction:column; gap:14px; min-height:0">
-      <div class="card"><h3>Importancia global</h3><img src="figs/ebm_imp.svg" alt="Importancia de variables del EBM"></div>
+      <div class="card key">
+        <h3>Discusión</h3>
+        <ul>
+          <li>El EBM ofrece el mejor compromiso: aditivo como la RL, pero una curva por variable.</li>
+          <li>Ningún modelo resuelve las cuentas inactivas → un indicador de cuenta inactiva mejoraría FP/TP.</li>
+          <li>Mejoras: categóricas sin codificar, ajustar hiperparámetros del EBM y umbral con función de costes.</li>
+        </ul>
+      </div>
       <div class="card" style="flex:1">
         <h3>Los 3 modelos, mismos casos</h3>
-        <img src="figs/local_comparacion.svg" alt="Probabilidad de los tres modelos en los casos A-D">
-        <p class="small" style="margin-top:2px">Coinciden en A; discrepan en B (justo en el umbral). Ninguno detecta D con 0,5; los tres con 0,25.</p>
+        <img src="figs/local_comparacion.svg" alt="Probabilidad de los tres modelos en los cuatro casos">
+        <p class="small" style="margin-top:2px">Coinciden en TN; discrepan en FP (solo la RL acierta). Ninguno detecta FN con 0,5; los tres con 0,25.</p>
       </div>
     </div>
   </div>
-  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Grupo: <b>[nombres del grupo]</b></span><span>4 / 4</span></footer>
+  <footer><span>Inteligencia Artificial Explicable · Proyecto Unidad 2 · Javier Lineros Ballesta · Nicolás Pueyo Soria · Jorge Palma Rojas</span><span>4 / 4</span></footer>
 </section>
 
 </body>
