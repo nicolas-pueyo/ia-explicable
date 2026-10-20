@@ -69,7 +69,7 @@
   <div class="kpis">
     <div class="kpi"><div class="v">25.000</div><div class="l">clientes de entrenamiento · 15 variables (historial de pago 6 meses, facturas, demografía, plan de asistencia)</div></div>
     <div class="kpi"><div class="v">21,2 %</div><div class="l">tienen dificultad de pago → baseline de accuracy 0,788 y foco en balanced accuracy / recall</div></div>
-    <div class="kpi"><div class="v" style="color:var(--ebm)">0,776</div><div class="l">ROC AUC del EBM, el mejor modelo en todas las métricas → usado para <b>test.csv</b></div></div>
+    <div class="kpi"><div class="v" style="color:var(--ebm)">0,776</div><div class="l">ROC AUC del EBM, el mejor en todas las métricas salvo precision → usado para <b>test.csv</b></div></div>
     <div class="kpi"><div class="v">0,30 → 0,58</div><div class="l">recall del EBM al bajar el umbral de 0,5 a 0,25 (balanced acc. 0,629 → 0,700; accuracy 0,819 → 0,768)</div></div>
   </div>
   <div class="grid" style="grid-template-columns: 1.32fr 1fr 1fr;">
@@ -131,7 +131,7 @@
     <div class="card">
       <h3>Interpretación local · mismos casos en los 3 modelos</h3>
       <div class="cases">
-        <p><span class="pill w">TN</span>al día, paga todos los meses, 54 años: hoja más poblada (7.560), P = 0,181 → <span class="prot">0 ✓</span></p>
+        <p><span class="pill w">TN</span>estado de pago 0 (sin retraso), paga todos los meses, 54 años: hoja más poblada (7.560), P = 0,181 → <span class="prot">0 ✓</span></p>
         <p><span class="pill w">FN</span>2 meses de retraso pero paga todos los meses: hoja P = 0,409 → <span class="prot">0 ✗</span>. Ignora utilización 99 %; con t = 0,25 acertaría.</p>
         <p><span class="pill w">FP</span><span class="pill w">TP</span>mismo recorrido y <b>misma hoja (P = 0,630)</b>: 1 mes de retraso, ratio 0 y 6 meses sin abonos.</p>
         <p>Pero su factura media es ≈ 0: cuentas inactivas, <b>“no debe nada”</b>, no “no paga”. El árbol no puede separarlos; el 37 % de esa hoja no tiene dificultades.</p>
